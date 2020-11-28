@@ -1,0 +1,4 @@
+{
+    "appService.defaultWebAppToDeploy": "/subscriptions/e963a70a-0f67-4622-9b04-627d0729ca3c/resourceGroups/TechBlog/providers/Microsoft.Web/sites/msi-auth-demo-api",
+    "appService.deploySubpath": "publish"
+}

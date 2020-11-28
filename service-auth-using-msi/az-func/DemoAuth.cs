@@ -14,27 +14,29 @@ namespace AzFunc
 {
     public static class DemoAuth
     {
-        private const string WEB_API_RESOURCE_ID = "";
+        private const string WEB_API_URL = "https://my_web_api.azurewebsites.net";
+        private const string WEB_API_CLIENT_ID = "my_client_id";
 
-        [FunctionName("DemoAuth")]
-        public static async Task<IActionResult> Run(
-            [HttpTrigger(AuthorizationLevel.Anonymous, "get", "post", Route = null)] HttpRequest req,
-            ILogger log)
+        [FunctionName("DemoAuthGET")]
+        public static async Task<IActionResult> RunDemo([HttpTrigger(AuthorizationLevel.Anonymous, "get")] HttpRequest req, ILogger log)
         {
             try
             {
                 var authServiceTokenProvider = new AzureServiceTokenProvider();
-                var authToken = await authServiceTokenProvider.GetAccessTokenAsync(WEB_API_RESOURCE_ID);
-
-                var authHeader = new AuthenticationHeaderValue("Bearer", authToken);
+                var authToken = await authServiceTokenProvider.GetAccessTokenAsync(WEB_API_CLIENT_ID);
 
                 var httpClient = new HttpClient();
-                httpClient.DefaultRequestHeaders.Authorization = authHeader;
+                httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", authToken);
 
-                var result = await httpClient.GetAsync("https://myservice.azurewebsites.net/api/demo");
+                var result = await httpClient.GetAsync($"{WEB_API_URL}/api/demo");
+                if(!result.IsSuccessStatusCode)
+                {
+                    throw new Exception ($"API responded with failure status code: {result.StatusCode}");
+                }
+
                 var resultContent = await result.Content.ReadAsStringAsync();
 
-                return new OkObjectResult(JsonConvert.DeserializeObject(resultContent));
+                return new OkObjectResult($"Successfully authenticated to the web API! Received the following response: {resultContent}");
             }
             catch(Exception ex)
             {
